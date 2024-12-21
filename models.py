@@ -96,7 +96,7 @@ class WhitelistCreate(WhitelistBase):
                 start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
             except ValueError:
                 raise HTTPException(status_code=422, detail="start_time format must be 'YYYY-MM-DD HH:MM:SS'")
-        
+        values["start_time"] = str(start_time)
         end_time = start_time
 
         if values.get("minutes"):
@@ -109,12 +109,10 @@ class WhitelistCreate(WhitelistBase):
             end_time += timedelta(weeks=values["weeks"])
         if values.get("months"):
             end_time += relativedelta(months=+values["months"])
-        #     start_time = end_time
-        # if values.get("years"):
-        #     end_time = start_time + timedelta(days=values["years"])
-        
-        values["start_time"] = str(start_time)
-        values["end_time"] = str(end_time)
+        if values.get("years"):
+            values["end_time"] = str(end_time.replace(year=end_time.year + values["years"]))
+        else:
+            values["end_time"] = str(end_time)
         return values
 
         
