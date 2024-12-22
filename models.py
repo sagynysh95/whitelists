@@ -75,6 +75,9 @@ class WhitelistBase(BaseModel):
         default=None,
         description="exact month for permission"
     )
+    hours_start: Optional[int] = Field(
+        default=None
+    )
 
 
 class WhitelistCreate(WhitelistBase):

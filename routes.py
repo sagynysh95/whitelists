@@ -29,6 +29,9 @@ def check_permission(
             result = mongo_find_all()
             return [WhitelistBase.model_validate(data) for data in result]
         
+        if len(date) == 10:
+            date += " 00:00:00"
+
         check_date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
         record = mongo_find_by_user_id(user_id)
         if not record:
