@@ -34,4 +34,15 @@ def mongo_find_by_user_id(user_id):
     return collection.find_one({"user_id": user_id}, {"_id": 0})
 
 
+def mongo_update_one(user_id, query):
+    collection = setup_mongo()
+    filter = {"user_id": user_id}
+    new_values = {"$set": query}
+    return collection.update_one(filter, new_values)
+
+
+def mongo_delete_one(user_id):
+    collection = setup_mongo()
+    filter = {"user_id": user_id}
+    return collection.delete_one(filter)
 

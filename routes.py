@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from models import WhitelistCreate, WhitelistBase
-from mongo_file import mongo_insert_one, mongo_find_all, mongo_find_by_user_id
+from models import WhitelistCreate, WhitelistBase, WhitelistUpdate
+from mongo_file import mongo_insert_one, mongo_find_all, mongo_find_by_user_id, mongo_update_one, mongo_delete_one
 from typing import List, Optional, Union
-from datetime import datetime
+from datetime import datetime, time
+from logger import logger
 
 
 router = APIRouter(prefix="/whitelist", tags=["whitelist"])
@@ -40,6 +41,14 @@ def check_permission(
         start_time = datetime.strptime(record["start_time"], "%Y-%m-%d %H:%M:%S")
         end_time = datetime.strptime(record["end_time"], "%Y-%m-%d %H:%M:%S")
 
+        hours_start_str, hours_end_str = record.get("hours_start"), record.get("hours_end")
+        if hours_start_str:
+            date_hour = check_date.time()
+            hours_start = datetime.strptime(hours_start_str, "%H:%M:%S").time()
+            hours_end = datetime.strptime(hours_end_str, "%H:%M:%S").time()
+            if not (hours_start <= date_hour <= hours_end):
+                return {"result": False, "message": "Hour not in range"}
+
         if not (start_time <= check_date <= end_time):
             return {"result": False, "message": "Date not in range"}
         
@@ -55,5 +64,30 @@ def check_permission(
             
         return {"result": True}
 
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error: {e}")
+    
+
+@router.put("/", status_code=200, response_model=dict)
+def update_permission(
+    data: WhitelistUpdate
+):
+    update_data = data.model_dump(exclude_none=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="no data")
+    
+    result = mongo_update_one(data.user_id, update_data)
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Data was not updated")
+    return {"updated": "Data was successfully updated"}
+
+
+@router.delete("/", status_code=200, response_model=dict)
+def delete_user(user_id: str):
+    try:
+        result = mongo_delete_one(user_id)
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="user not found")
+        return {"deleted": "User was successfully deleted"}
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Error: {e}")
