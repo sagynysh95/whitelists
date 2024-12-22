@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Optional
 from datetime import datetime, timedelta
 from enum import Enum
-from utils.calc_time import calc_end_time
 from fastapi import HTTPException
 from dateutil.relativedelta import relativedelta
 
@@ -93,6 +92,8 @@ class WhitelistCreate(WhitelistBase):
             start_time = values["start_time"]
         else:
             try:
+                if len(start_time) == 10:
+                    start_time += " 00:00:00"
                 start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
             except ValueError:
                 raise HTTPException(status_code=422, detail="start_time format must be 'YYYY-MM-DD HH:MM:SS'")
