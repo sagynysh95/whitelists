@@ -39,11 +39,13 @@ class WhitelistBase(BaseModel):
     )
     start_time: Optional[str] = Field(
         default=None,
-        description="start time for permission"
+        description="start time for permission",
+        examples=["2024-12-12 18:12:00"]
     )
     end_time: Optional[str] = Field(
         default=None, 
-        description="permission expiration time"
+        description="permission expiration time",
+        examples=["2024-12-24 00:00:00"]
     )
     weekday: Optional[WeekdayEnum] = Field(
         default=None,
